@@ -33,3 +33,14 @@ build/
 
 # Logs
 *.log
+
+# Local helper scripts
+tools/dump_project.py
+
+# Local project dump
+tools/project_dump.txt
+
+# Mypy
+.mypy_cache/
+
+
