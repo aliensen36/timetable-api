@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -25,8 +26,13 @@ class ScheduleCreate(BaseModel):
     )
 
 
-class ScheduleCreateResponse(BaseModel):
+class ScheduleResponse(BaseModel):
     id: UUID
+    user_id: str
+    medicine_name: str
+    frequency: int
+    treatment_days: int | None
+    created_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,

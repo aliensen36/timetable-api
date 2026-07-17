@@ -1,9 +1,9 @@
 from app.schemas.schedule import (
     ScheduleCreate,
-    ScheduleCreateResponse,
+    ScheduleResponse,
 )
 
 __all__ = [
     "ScheduleCreate",
-    "ScheduleCreateResponse",
+    "ScheduleResponse",
 ]

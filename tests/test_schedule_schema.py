@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -5,7 +6,7 @@ from pydantic import ValidationError
 
 from app.schemas.schedule import (
     ScheduleCreate,
-    ScheduleCreateResponse,
+    ScheduleResponse,
 )
 
 
@@ -53,11 +54,17 @@ def test_schedule_create_invalid_frequency(
         )
 
 
-def test_schedule_create_response() -> None:
+def test_schedule_response() -> None:
     schedule_id = uuid4()
 
-    response = ScheduleCreateResponse(
+    response = ScheduleResponse(
         id=schedule_id,
+        user_id="user-1",
+        medicine_name="Ibuprofen",
+        frequency=3,
+        treatment_days=10,
+        created_at=datetime.now(UTC),
     )
 
     assert response.id == schedule_id
+    assert response.medicine_name == "Ibuprofen"
