@@ -33,6 +33,7 @@ build/
 
 # Logs
 *.log
+commits.txt
 
 # Local helper scripts
 tools/dump_project.py

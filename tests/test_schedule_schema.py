@@ -1,0 +1,63 @@
+from uuid import uuid4
+
+import pytest
+from pydantic import ValidationError
+
+from app.schemas.schedule import (
+    ScheduleCreate,
+    ScheduleCreateResponse,
+)
+
+
+def test_schedule_create_valid() -> None:
+    schema = ScheduleCreate(
+        user_id="user-1",
+        medicine_name="Ibuprofen",
+        frequency=3,
+        treatment_days=14,
+    )
+
+    assert schema.user_id == "user-1"
+    assert schema.medicine_name == "Ibuprofen"
+    assert schema.frequency == 3
+    assert schema.treatment_days == 14
+
+
+def test_schedule_create_accepts_none_treatment_days() -> None:
+    schema = ScheduleCreate(
+        user_id="user-1",
+        medicine_name="Vitamin C",
+        frequency=1,
+        treatment_days=None,
+    )
+
+    assert schema.treatment_days is None
+
+
+@pytest.mark.parametrize(
+    "frequency",
+    [
+        0,
+        25,
+    ],
+)
+def test_schedule_create_invalid_frequency(
+    frequency: int,
+) -> None:
+    with pytest.raises(ValidationError):
+        ScheduleCreate(
+            user_id="user-1",
+            medicine_name="Ibuprofen",
+            frequency=frequency,
+            treatment_days=10,
+        )
+
+
+def test_schedule_create_response() -> None:
+    schedule_id = uuid4()
+
+    response = ScheduleCreateResponse(
+        id=schedule_id,
+    )
+
+    assert response.id == schedule_id
