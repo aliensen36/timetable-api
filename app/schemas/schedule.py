@@ -37,3 +37,7 @@ class ScheduleResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class ScheduleListResponse(BaseModel):
+    schedule_ids: list[UUID]

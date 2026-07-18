@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from app.schemas.schedule import (
     ScheduleCreate,
+    ScheduleListResponse,
     ScheduleResponse,
 )
 
@@ -68,3 +69,16 @@ def test_schedule_response() -> None:
 
     assert response.id == schedule_id
     assert response.medicine_name == "Ibuprofen"
+
+
+def test_schedule_list_response() -> None:
+    schedule_ids = [
+        uuid4(),
+        uuid4(),
+    ]
+
+    response = ScheduleListResponse(
+        schedule_ids=schedule_ids,
+    )
+
+    assert response.schedule_ids == schedule_ids
