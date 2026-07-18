@@ -34,3 +34,18 @@ async def get_schedule_ids(
     )
 
     return list(result)
+
+
+async def get_schedule(
+    session: AsyncSession,
+    user_id: str,
+    schedule_id: UUID,
+) -> Schedule | None:
+    result = await session.scalar(
+        select(Schedule).where(
+            Schedule.id == schedule_id,
+            Schedule.user_id == user_id,
+        )
+    )
+
+    return result

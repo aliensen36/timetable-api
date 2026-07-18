@@ -41,3 +41,17 @@ class ScheduleResponse(BaseModel):
 
 class ScheduleListResponse(BaseModel):
     schedule_ids: list[UUID]
+
+
+class ScheduleDetailsResponse(BaseModel):
+    id: UUID
+    user_id: str
+    medicine_name: str
+    frequency: int
+    treatment_days: int | None
+    created_at: datetime
+    daily_schedule: list[str]
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
