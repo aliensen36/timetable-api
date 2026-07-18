@@ -55,3 +55,9 @@ class ScheduleDetailsResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class NextTakingResponse(BaseModel):
+    schedule_id: UUID
+    medicine_name: str
+    taking_time: str

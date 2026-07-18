@@ -8,6 +8,8 @@ class Settings(BaseSettings):
 
     database_url: str
 
+    next_takings_period_minutes: int = 60
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

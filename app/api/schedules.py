@@ -3,8 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.db.dependencies import get_db
 from app.schemas.schedule import (
+    NextTakingResponse,
     ScheduleCreate,
     ScheduleDetailsResponse,
     ScheduleListResponse,
@@ -12,6 +14,7 @@ from app.schemas.schedule import (
 )
 from app.services.schedule import (
     create_schedule,
+    get_next_takings,
     get_schedule,
     get_schedule_ids,
 )
@@ -101,3 +104,26 @@ async def get_schedule_endpoint(
             schedule.frequency,
         ),
     )
+
+
+@router.get(
+    "/next",
+    response_model=list[NextTakingResponse],
+)
+async def get_next_takings_endpoint(
+    user_id: str = Query(
+        min_length=1,
+        max_length=255,
+    ),
+    session: AsyncSession = Depends(get_db),
+) -> list[NextTakingResponse]:
+
+    settings = get_settings()
+
+    takings = await get_next_takings(
+        session=session,
+        user_id=user_id,
+        period_minutes=settings.next_takings_period_minutes,
+    )
+
+    return [NextTakingResponse(**item) for item in takings]

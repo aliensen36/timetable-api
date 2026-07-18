@@ -1,4 +1,5 @@
 from app.schemas.schedule import (
+    NextTakingResponse,
     ScheduleCreate,
     ScheduleDetailsResponse,
     ScheduleListResponse,
@@ -6,6 +7,7 @@ from app.schemas.schedule import (
 )
 
 __all__ = [
+    "NextTakingResponse",
     "ScheduleCreate",
     "ScheduleResponse",
     "ScheduleListResponse",
