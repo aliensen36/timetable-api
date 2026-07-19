@@ -13,7 +13,7 @@ async def test_create_schedule() -> None:
         base_url="http://test",
     ) as client:
         response = await client.post(
-            "/api/v1/schedules",
+            "/schedule",
             json={
                 "user_id": "user-1",
                 "medicine_name": "Ibuprofen",
@@ -24,3 +24,6 @@ async def test_create_schedule() -> None:
 
     assert response.status_code == 201
     assert "id" in response.json()
+    assert list(response.json().keys()) == [
+        "id",
+    ]

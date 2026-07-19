@@ -61,3 +61,7 @@ class NextTakingResponse(BaseModel):
     schedule_id: UUID
     medicine_name: str
     taking_time: str
+
+
+class ScheduleCreatedResponse(BaseModel):
+    id: UUID

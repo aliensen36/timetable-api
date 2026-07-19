@@ -8,9 +8,9 @@ from app.db.dependencies import get_db
 from app.schemas.schedule import (
     NextTakingResponse,
     ScheduleCreate,
+    ScheduleCreatedResponse,
     ScheduleDetailsResponse,
     ScheduleListResponse,
-    ScheduleResponse,
 )
 from app.services.schedule import (
     create_schedule,
@@ -19,31 +19,28 @@ from app.services.schedule import (
     get_schedule_ids,
 )
 
-router = APIRouter(
-    prefix="/schedules",
-    tags=["Schedules"],
-)
+router = APIRouter(tags=["Schedules"])
 
 
 @router.post(
-    "",
-    response_model=ScheduleResponse,
+    "/schedule",
+    response_model=ScheduleCreatedResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_schedule_endpoint(
     data: ScheduleCreate,
     session: AsyncSession = Depends(get_db),
-) -> ScheduleResponse:
+) -> ScheduleCreatedResponse:
     schedule = await create_schedule(
         session,
         data,
     )
 
-    return ScheduleResponse.model_validate(schedule)
+    return ScheduleCreatedResponse(id=schedule.id)
 
 
 @router.get(
-    "",
+    "/schedules",
     response_model=ScheduleListResponse,
 )
 async def get_schedule_ids_endpoint(
@@ -64,7 +61,7 @@ async def get_schedule_ids_endpoint(
 
 
 @router.get(
-    "/detail",
+    "/schedule",
     response_model=ScheduleDetailsResponse,
 )
 async def get_schedule_endpoint(
@@ -107,7 +104,7 @@ async def get_schedule_endpoint(
 
 
 @router.get(
-    "/next",
+    "/next_takings",
     response_model=list[NextTakingResponse],
 )
 async def get_next_takings_endpoint(
