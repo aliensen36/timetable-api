@@ -1,180 +1,90 @@
 # Timetable API
 
-Backend-сервис для формирования расписаний приёма лекарств.
+Backend-сервис для создания расписаний приема лекарств.
 
-Проект реализован на Python с использованием FastAPI и предназначен для мобильного приложения, которое напоминает пользователям о необходимости приёма лекарств.
+Сервис позволяет:
 
-## Стек
+* создавать расписание приема препарата;
+* получать список расписаний пользователя;
+* получать детали расписания с рассчитанными временами приема;
+* получать ближайшие приемы лекарств в заданный период.
+
+Проект реализован на **FastAPI**, использует **PostgreSQL**, **SQLAlchemy Async**, **Alembic** и запускается через **Docker**.
+
+---
+
+## Tech Stack
 
 * Python 3.12+
 * FastAPI
-* SQLAlchemy 2.0 (async)
+* Uvicorn
+* SQLAlchemy 2 Async
 * PostgreSQL
+* asyncpg
 * Alembic
 * Pydantic Settings
+* Docker / Docker Compose
 * Pytest
-* Ruff
-* Mypy
-
-## Реализованные требования
-
-Сервис поддерживает:
-
-* создание расписания приёма лекарств;
-* получение списка расписаний пользователя;
-* получение расписания с рассчитанными временными метками;
-* получение ближайших приёмов лекарств.
-
-Основные правила расчёта:
-
-* приём лекарств возможен только в дневной период:
-
-  * начало: `08:00`
-  * конец: `22:00`
-
-* количество приёмов:
-
-  * от 1 раза в день;
-  * до ежечасного приёма.
-
-* продолжительность лечения:
-
-  * ограниченный период через `treatment_days`;
-  * постоянный приём через `treatment_days=null`.
-
-* все рассчитанные минуты округляются до ближайшего значения, кратного 15 минутам.
-
-Авторизация и аутентификация отсутствуют согласно требованиям тестового задания.
 
 ---
 
-# Структура проекта
+# Features
+
+## Schedule creation
+
+Создание расписания приема лекарства.
+
+Поддерживается:
+
+* от 1 до 15 приемов в день;
+* постоянный прием (`treatment_days = null`);
+* ограниченный курс лечения.
+
+---
+
+## Schedule calculation
+
+Время приема рассчитывается автоматически:
+
+* дневной интервал: **08:00 - 22:00**;
+* время округляется до ближайших 15 минут;
+* максимальная частота — ежечасный прием.
+
+Примеры:
 
 ```
-timetable-api
-├── app
-│   ├── api          # HTTP endpoints
-│   ├── core         # настройки приложения
-│   ├── db           # подключение к БД
-│   ├── models       # SQLAlchemy модели
-│   ├── schemas      # Pydantic схемы
-│   ├── services     # бизнес-логика
-│   └── main.py
-│
-├── alembic          # миграции базы данных
-├── tests            # автоматические тесты
-├── pyproject.toml
-└── README.md
+frequency = 1
+
+08:00
+```
+
+```
+frequency = 3
+
+08:00
+15:00
+22:00
+```
+
+```
+frequency = 15
+
+08:00
+09:00
+10:00
+...
+22:00
 ```
 
 ---
 
-# Установка
-
-## Требования
-
-* Python 3.12+
-* PostgreSQL 14+
-
-## Клонирование
-
-```bash
-git clone https://github.com/aliensen36/timetable-api.git
-
-cd timetable-api
-```
-
-## Установка зависимостей
-
-Создание виртуального окружения:
-
-```bash
-python -m venv .venv
-```
-
-Активация:
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Установка зависимостей:
-
-```bash
-pip install -e ".[dev]"
-```
-
----
-
-# Настройка окружения
-
-Создать файл `.env`:
-
-```env
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/DB
-NEXT_TAKINGS_PERIOD_MINUTES=60
-```
-
-Параметры:
-
-| Переменная                  | Описание                        | Значение по умолчанию |
-| --------------------------- | ------------------------------- | --------------------- |
-| DATABASE_URL                | строка подключения PostgreSQL   | -                     |
-| NEXT_TAKINGS_PERIOD_MINUTES | период поиска ближайших приёмов | 60 минут              |
-
----
-
-# Миграции базы данных
-
-Применить миграции:
-
-```bash
-alembic upgrade head
-```
-
-Создание новой миграции:
-
-```bash
-alembic revision --autogenerate -m "migration name"
-```
-
----
-
-# Запуск приложения
-
-Запуск FastAPI:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-После запуска API доступно:
-
-```
-http://127.0.0.1:8000
-```
-
-Swagger документация:
-
-```
-http://127.0.0.1:8000/docs
-```
-
----
-
-# API
+# API Endpoints
 
 ## Health check
 
-### GET `/health`
+```
+GET /health
+```
 
 Ответ:
 
@@ -186,67 +96,67 @@ http://127.0.0.1:8000/docs
 
 ---
 
-## Создание расписания
+## Create schedule
 
-### POST `/schedule`
+```
+POST /schedule
+```
 
-Пример запроса:
+Request:
 
 ```json
 {
-  "user_id": "animal-123",
-  "medicine_name": "Vitamin C",
+  "user_id": "user-1",
+  "medicine_name": "Ibuprofen",
   "frequency": 3,
-  "treatment_days": 14
+  "treatment_days": 10
 }
 ```
 
-Ответ:
+Response:
 
 ```json
 {
-  "id": "4f3b6c9a-6d7e-4c8e-b5c4-3b9f5d1d1234"
+  "id": "uuid"
 }
 ```
 
 ---
 
-## Получение списка расписаний пользователя
+## Get user schedules
 
-### GET `/schedules?user_id=animal-123`
+```
+GET /schedules?user_id=user-1
+```
 
-Ответ:
+Response:
 
 ```json
 {
   "schedule_ids": [
-    "4f3b6c9a-6d7e-4c8e-b5c4-3b9f5d1d1234"
+    "uuid"
   ]
 }
 ```
 
 ---
 
-## Получение расписания с расчётом времени
-
-### GET `/schedule`
-
-Параметры:
+## Get schedule details
 
 ```
-user_id
-schedule_id
+GET /schedule?user_id=user-1&schedule_id=<uuid>
 ```
 
-Пример ответа:
+Response:
 
 ```json
 {
-  "id": "4f3b6c9a-6d7e-4c8e-b5c4-3b9f5d1d1234",
-  "user_id": "animal-123",
-  "medicine_name": "Vitamin C",
+  "id": "uuid",
+  "user_id": "user-1",
+  "medicine_name": "Ibuprofen",
   "frequency": 3,
-  "treatment_days": 14,
+  "treatment_days": 10,
+  "created_at": "2026-07-16T12:00:00Z",
   "daily_schedule": [
     "08:00",
     "15:00",
@@ -257,31 +167,119 @@ schedule_id
 
 ---
 
-## Ближайшие приёмы
+## Get next takings
 
-### GET `/next_takings?user_id=animal-123`
-
-Возвращает лекарства, которые необходимо принять в течение периода из настройки:
-
-```env
-NEXT_TAKINGS_PERIOD_MINUTES=60
+```
+GET /next_takings?user_id=user-1
 ```
 
-Пример ответа:
+Возвращает приемы лекарств в ближайшем временном периоде.
 
-```json
-[
-  {
-    "schedule_id": "4f3b6c9a-6d7e-4c8e-b5c4-3b9f5d1d1234",
-    "medicine_name": "Vitamin C",
-    "taking_time": "08:00"
-  }
-]
+Период задается переменной:
+
+```
+NEXT_TAKINGS_PERIOD_MINUTES
 ```
 
 ---
 
-# Тестирование
+# Running with Docker
+
+## Requirements
+
+Установить:
+
+* Docker Desktop
+* Docker Compose
+
+Проверка:
+
+```bash
+docker --version
+docker compose version
+```
+
+---
+
+## Environment
+
+Создать файл `.env`:
+
+```env
+DATABASE_URL=postgresql+asyncpg://timetable_user:timetable_password@host.docker.internal:5432/timetable
+
+NEXT_TAKINGS_PERIOD_MINUTES=60
+```
+
+---
+
+## Build and start
+
+Запуск контейнера:
+
+```bash
+docker compose up --build
+```
+
+После запуска API доступно:
+
+```
+http://localhost:8000
+```
+
+Swagger документация:
+
+```
+http://localhost:8000/docs
+```
+
+---
+
+## Stop application
+
+Остановить контейнер:
+
+```bash
+docker compose down
+```
+
+---
+
+# Database migrations
+
+Миграции выполняются автоматически при старте контейнера.
+
+Используется:
+
+```bash
+alembic upgrade head
+```
+
+Команда запускается внутри:
+
+```
+entrypoint.sh
+```
+
+---
+
+# Local Development
+
+Установка зависимостей:
+
+```bash
+pip install .
+```
+
+Запуск приложения:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+---
+
+# Tests
 
 Запуск тестов:
 
@@ -289,32 +287,100 @@ NEXT_TAKINGS_PERIOD_MINUTES=60
 pytest
 ```
 
-Проверяется:
+Проверяются:
 
-* работа API;
-* Pydantic-схемы;
+* API endpoints;
 * модели SQLAlchemy;
-* настройки приложения;
-* расчёт расписания;
-* правила округления времени;
-* Alembic-конфигурация.
+* Pydantic schemas;
+* расчет расписания;
+* конфигурация;
+* Alembic.
 
 ---
 
-# Архитектура
+# Project Structure
 
-Проект разделён на слои:
-
-* `api` — HTTP слой;
-* `schemas` — входные и выходные модели;
-* `services` — бизнес-логика;
-* `models` — модели базы данных;
-* `db` — работа с PostgreSQL.
-
-Бизнес-логика расчёта расписания вынесена отдельно в сервис `schedule_calculator`, что позволяет тестировать её независимо от API и базы данных.
+```
+timetable-api
+│
+├── alembic
+│   └── migrations
+│
+├── app
+│   ├── api
+│   │   └── schedules.py
+│   │
+│   ├── core
+│   │   └── config.py
+│   │
+│   ├── db
+│   │   ├── session.py
+│   │   └── dependencies.py
+│   │
+│   ├── models
+│   │   └── schedule.py
+│   │
+│   ├── schemas
+│   │   └── schedule.py
+│   │
+│   ├── services
+│   │   ├── schedule.py
+│   │   └── schedule_calculator.py
+│   │
+│   └── main.py
+│
+├── tests
+│
+├── Dockerfile
+├── docker-compose.yml
+├── entrypoint.sh
+├── pyproject.toml
+├── .env.example
+└── README.md
+```
 
 ---
 
-# Лицензия
+# Docker Configuration
 
-Учебный проект.
+## Dockerfile
+
+Используется образ:
+
+```
+python:3.12-slim
+```
+
+Контейнер:
+
+* устанавливает зависимости;
+* выполняет миграции;
+* запускает FastAPI через Uvicorn.
+
+---
+
+## docker-compose.yml
+
+Compose запускает сервис:
+
+```
+timetable-api
+```
+
+Порт:
+
+```
+8000:8000
+```
+
+Автоматически:
+
+* собирает Docker image;
+* создает контейнер;
+* запускает приложение.
+
+---
+
+# License
+
+Test project.
