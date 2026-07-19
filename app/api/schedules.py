@@ -1,6 +1,12 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
@@ -18,6 +24,7 @@ from app.services.schedule import (
     get_schedule,
     get_schedule_ids,
 )
+from app.services.schedule_calculator import generate_daily_schedule
 
 router = APIRouter(tags=["Schedules"])
 
@@ -79,16 +86,10 @@ async def get_schedule_endpoint(
     )
 
     if schedule is None:
-        from fastapi import HTTPException
-
         raise HTTPException(
             status_code=404,
             detail="Schedule not found",
         )
-
-    from app.services.schedule_calculator import (
-        generate_daily_schedule,
-    )
 
     return ScheduleDetailsResponse(
         id=schedule.id,
@@ -114,7 +115,6 @@ async def get_next_takings_endpoint(
     ),
     session: AsyncSession = Depends(get_db),
 ) -> list[NextTakingResponse]:
-
     settings = get_settings()
 
     takings = await get_next_takings(

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TypedDict
 from uuid import UUID
 
@@ -26,7 +26,12 @@ async def create_schedule(
 
     session.add(schedule)
 
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+
     await session.refresh(schedule)
 
     return schedule
@@ -71,7 +76,7 @@ async def get_next_takings(
         )
     )
 
-    now = datetime.now()
+    now = datetime.now(UTC)
 
     end_time = now + timedelta(
         minutes=period_minutes,
@@ -105,5 +110,9 @@ async def get_next_takings(
                         "taking_time": time_value,
                     }
                 )
+
+    result.sort(
+        key=lambda item: item["taking_time"],
+    )
 
     return result
