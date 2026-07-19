@@ -17,7 +17,7 @@ class ScheduleCreate(BaseModel):
 
     frequency: int = Field(
         ge=1,
-        le=24,
+        le=15,
     )
 
     treatment_days: int | None = Field(

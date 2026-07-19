@@ -40,7 +40,7 @@ def test_schedule_create_accepts_none_treatment_days() -> None:
     "frequency",
     [
         0,
-        25,
+        16,
     ],
 )
 def test_schedule_create_invalid_frequency(
